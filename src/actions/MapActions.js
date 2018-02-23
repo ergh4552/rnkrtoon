@@ -37,7 +37,7 @@ const lajiluettelo = [
 
 const nearestRecyclingPointsFetched = false;
 
-const regionFrom = (lat, lon, distance) => {
+const regionFrom = (latitude, longitude, distance) => {
     distance = distance / 2
     const circumference = 40075
     const oneDegreeOfLatitudeInMeters = 111.32 * 1000
@@ -45,12 +45,12 @@ const regionFrom = (lat, lon, distance) => {
 
     const latitudeDelta = distance / oneDegreeOfLatitudeInMeters
     const longitudeDelta = Math.abs(Math.atan2(
-        Math.sin(angularDistance) * Math.cos(lat),
-        Math.cos(angularDistance) - Math.sin(lat) * Math.sin(lat)))
+        Math.sin(angularDistance) * Math.cos(latitude),
+        Math.cos(angularDistance) - Math.sin(latitude) * Math.sin(latitude)))
 
     return result = {
-        latitude: lat,
-        longitude: lon,
+        latitude,
+        longitude,
         latitudeDelta,
         longitudeDelta,
     }
@@ -156,8 +156,8 @@ export const getNearestRecyclingPoints = (dispatch, position, distance) => {
                                     'paikka_id': exd[i].$.paikka_id,
                                     'aukiolo': exd[i].$.aukiolo,
                                     'etaisyys': exd[i].$.etaisyys,
-                                    'lat': exd[i].$.lat,
-                                    'lng': exd[i].$.lng,
+                                    'latitude': Number(exd[i].$.lat),
+                                    'longitude': Number(exd[i].$.lng),
                                     'coord': { 'latitude': Number(exd[i].$.lat), 'longitude': Number(exd[i].$.lng) },
                                     'laji_id': laji,
                                     'nimi': exd[i].$.nimi,

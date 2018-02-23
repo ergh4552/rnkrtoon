@@ -7,6 +7,8 @@ import {
     StyleSheet,
     Dimensions,
     PermissionsAndroid,
+    TouchableOpacity,
+    Text,    
     BackHandler
 } from 'react-native';
 
@@ -24,7 +26,7 @@ const LATITUDE_DELTA = 0.0922;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 const permissionsGranted = false;
 
-
+const DEFAULT_PADDING = { top: 40, right: 40, bottom: 40, left: 40 };
 
 // Make a component
 class LandingPage extends Component {
@@ -69,6 +71,14 @@ class LandingPage extends Component {
         Actions.pop() // Return to previous screen
         return true // Needed so BackHandler knows that you are overriding the default action and that it should not close the app
     }    
+    fitAllMarkers() {
+        console.log('fitAllMarkers');
+        console.log(this.props);
+        this.map.fitToCoordinates(this.props.recycling.points, {
+          edgePadding: DEFAULT_PADDING,
+          animated: true,
+        });
+      }    
 
     renderMap()
     {
@@ -76,6 +86,7 @@ class LandingPage extends Component {
             return (
                 <View style={styles.container}>
                     <MapView
+                        ref={ref => { this.map = ref; }}
                         style={styles.map}
                         region={this.props.currentregion}>
                         {this.props.recycling.points.map(marker => (
@@ -87,6 +98,14 @@ class LandingPage extends Component {
                             />
                         ))}
                     </MapView>
+                    <View style={styles.buttonContainer}>
+                        <TouchableOpacity
+                            onPress={() => this.fitAllMarkers()}
+                            style={[styles.bubble, styles.button]}
+                        >
+                        <Text>Kaikki</Text>
+                        </TouchableOpacity>
+                    </View>                    
                 </View>
             );
 
@@ -95,6 +114,7 @@ class LandingPage extends Component {
             return (
                 <View style={styles.container}>
                     <MapView
+                        ref={ref => { this.map = ref; }}
                         style={styles.map}
                         region={this.props.currentregion}>
                     </MapView>
@@ -131,11 +151,26 @@ const styles = StyleSheet.create({
         backgroundColor: '#F5FCFF',
     },
     map: {
-        flex: 1,
-        width: 300,
-        height: 300
-    }
-})
+        ...StyleSheet.absoluteFillObject,
+      },
+      bubble: {
+        backgroundColor: 'rgba(255,255,255,0.7)',
+        paddingHorizontal: 18,
+        paddingVertical: 12,
+        borderRadius: 20,
+      },
+      button: {
+        marginTop: 12,
+        paddingHorizontal: 12,
+        alignItems: 'center',
+        marginHorizontal: 10,
+      },
+      buttonContainer: {
+        flexDirection: 'column',
+        marginVertical: 20,
+        backgroundColor: 'transparent',
+      },      
+    })
 
 const mapStateToProps = ( state ) => {
     const { currentregion, radius, error, loading, permission, retrylocation, recycling } = state.mapreducer;
