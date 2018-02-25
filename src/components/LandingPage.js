@@ -7,6 +7,8 @@ import {
     StyleSheet,
     Dimensions,
     PermissionsAndroid,
+    TouchableOpacity,
+    Text,    
     BackHandler
 } from 'react-native';
 
@@ -24,7 +26,7 @@ const LATITUDE_DELTA = 0.0922;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 const permissionsGranted = false;
 
-
+const DEFAULT_PADDING = { top: 40, right: 40, bottom: 40, left: 40 };
 
 // Make a component
 class LandingPage extends Component {
@@ -37,6 +39,7 @@ class LandingPage extends Component {
     }
 
     componentDidMount() {
+        console.log('componentDidMount');
         BackHandler.addEventListener('hardwareBackPress', () => this.backAndroid()) // Listen for the hardware back button on Android to be pressed
     }    
 
@@ -63,19 +66,60 @@ class LandingPage extends Component {
     }
 
     backAndroid() {
+        console.log('backAndroid');
         if (Actions.state.index === 0) {
             return false;
         }        
         Actions.pop() // Return to previous screen
         return true // Needed so BackHandler knows that you are overriding the default action and that it should not close the app
     }    
-
+    fitAllMarkers() {
+        console.log('fitAllMarkers');
+        console.log(this.props);
+        this.map.fitToCoordinates(this.props.recycling.points, {
+          edgePadding: DEFAULT_PADDING,
+          animated: true,
+        });
+    }    
+    fitDistanceMarkers(distance) {
+        console.log('fitDistanceMarkers:' + distance);
+        console.log(this.props);
+        let subSet = this.props.recycling.points.filter(x => x.etaisyys < distance) ;
+        if (subSet.length > 0) {
+            this.map.fitToCoordinates(subSet, {
+                edgePadding: DEFAULT_PADDING,
+                animated: true,
+            });
+        };
+    }    
+    renderButton(distance, distanceText)
+    {
+        return (
+        <TouchableOpacity
+            key={distanceText}
+            onPress={() => this.fitDistanceMarkers(distance)}
+            style={[styles.bubble, styles.button]}
+            >
+            <Text>{distanceText}</Text>
+        </TouchableOpacity>
+        );
+    }
     renderMap()
     {
         if (this.props.recycling != null) {
+            let subSet1km = this.props.recycling.points.filter(x => x.etaisyys < 1) ;
+            let subSet3km = this.props.recycling.points.filter(x => x.etaisyys < 3) ;
+            let subSet5km = this.props.recycling.points.filter(x => x.etaisyys < 5) ;
+            let buttons = [] ;
+            if (subSet1km.length > 0 ) buttons.push(this.renderButton(1, '1 km')) ;
+            if (subSet3km.length > 0 ) buttons.push(this.renderButton(3, '3 km')) ;
+            if (subSet5km.length > 0 ) buttons.push(this.renderButton(5, '5 km')) ;
+            buttons.push(this.renderButton(100, 'Kaikki')) ;
+            console.log(buttons) ;
             return (
                 <View style={styles.container}>
                     <MapView
+                        ref={ref => { this.map = ref; }}
                         style={styles.map}
                         region={this.props.currentregion}>
                         {this.props.recycling.points.map(marker => (
@@ -87,6 +131,9 @@ class LandingPage extends Component {
                             />
                         ))}
                     </MapView>
+                    <View style={styles.buttonContainer}>
+                        {buttons}
+                    </View>                    
                 </View>
             );
 
@@ -95,6 +142,7 @@ class LandingPage extends Component {
             return (
                 <View style={styles.container}>
                     <MapView
+                        ref={ref => { this.map = ref; }}
                         style={styles.map}
                         region={this.props.currentregion}>
                     </MapView>
@@ -131,11 +179,29 @@ const styles = StyleSheet.create({
         backgroundColor: '#F5FCFF',
     },
     map: {
-        flex: 1,
-        width: 300,
-        height: 300
-    }
-})
+        ...StyleSheet.absoluteFillObject,
+      },
+      bubble: {
+        backgroundColor: 'rgba(255,255,255,0.7)',
+        paddingHorizontal: 18,
+        paddingVertical: 12,
+        borderRadius: 10,
+      },
+      button: {
+        marginTop: 12,
+        paddingHorizontal: 12,
+        alignItems: 'center',
+        marginHorizontal: 10,
+      },
+      buttonContainer: {
+        position: 'absolute',
+        bottom: 5,
+        flexDirection: 'row',
+        alignContent: 'space-between',
+        marginVertical: 20,
+        backgroundColor: 'transparent',
+      },      
+    })
 
 const mapStateToProps = ( state ) => {
     const { currentregion, radius, error, loading, permission, retrylocation, recycling } = state.mapreducer;
