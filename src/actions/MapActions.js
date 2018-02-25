@@ -155,7 +155,7 @@ export const getNearestRecyclingPoints = (dispatch, position, distance) => {
                                 var newPoint = {
                                     'paikka_id': exd[i].$.paikka_id,
                                     'aukiolo': exd[i].$.aukiolo,
-                                    'etaisyys': exd[i].$.etaisyys,
+                                    'etaisyys': Number(exd[i].$.etaisyys),
                                     'latitude': Number(exd[i].$.lat),
                                     'longitude': Number(exd[i].$.lng),
                                     'coord': { 'latitude': Number(exd[i].$.lat), 'longitude': Number(exd[i].$.lng) },
